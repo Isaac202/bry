@@ -1,0 +1,642 @@
+{
+	"info": {
+		"_postman_id": "dbcafc09-de75-4b19-a121-e37c880ff7a9",
+		"name": "BRy HUB-FW",
+		"description": "O BRy HUB FW é um conjunto de serviços REST para a geração de assinaturas utilizando internamente as bibliotecas de criptografia da BRy Tecnologia para a manipulação das estruturas e atributos das assinaturas. O serviço possui suporte para geração de assinaturas básicas ou com carimbo do tempo. Abaixo está uma visão geral do funcionamento do BRY HUB FW.\n\n![Exemplo de funcionamento do BRy HUB](https://i.imgur.com/6RapQBF.png)\n\nO serviço disponibiliza opções para gerar assinaturas simples e coassinaturas nos formatos:\n* CMS (Cryptographic Message Syntax), conforme [RFC 5652](https://tools.ietf.org/html/rfc5652);\n* PDF (Portable Document Format) Signature, conforme [ISO 32000-1](https://www.adobe.com/content/dam/acom/en/devnet/pdf/pdfs/PDF32000_2008.pdf);\n* CAdES (Cryptographic Message Syntax Advanced Eletronic Signatures), conforme [DOC-ICP 15.03](https://www.iti.gov.br/images/repositorio/legislacao/documentos-principais/15.3/DOC-ICP-15.03_-_Versao_7.4_REQ_DAS_POL_DE_ASSIN_DIG_NA_ICP-BRASIL.pdf) e [ETSI EN 319 122-1](https://www.etsi.org/deliver/etsi_en/319100_319199/31912201/01.00.00_20/en_31912201v010000a.pdf);\n* PAdEs (PDF Advanced Eletronic Signature) conforme [DOC-ICP 15.03](https://www.iti.gov.br/images/repositorio/legislacao/documentos-principais/15.3/DOC-ICP-15.03_-_Versao_7.4_REQ_DAS_POL_DE_ASSIN_DIG_NA_ICP-BRASIL.pdf) e [ETSI EN 319 142-1](https://www.etsi.org/deliver/etsi_en/319100_319199/31914201/01.01.00_30/en_31914201v010100v.pdf);\n\nPermite utilizar os algoritmos de hash SHA1, SHA256 e SHA512 para a geração do resumo criptográfico calculado a partir do conteúdo do documento submetido. Possui configuração para integração com qualquer serviço de carimbo do tempo no padrão [RFC 3161](https://tools.ietf.org/html/rfc3161).\n\n### Arquivo de configurações\n\nExiste um arquivo de configuração application.yml que define algumas propriedades no processo de geração das assinaturas:\n\n* configuração dos logs\n\t* nível de log\n\t* caminho para o arquivo de log\n\t* nome do arquivo\n\t* definições para envio de log para graylog\n\nMaiores detalhes sobre cada configuração, pode ser encontrado dentro do próprio arquivo application.yml.\n\n### Credencial de acesso (framework)\nO Framework de Certificação Digital – BRy Framework – é um provedor de serviços de\ncertificação digital, que possui diversos serviços especialistas contemplando inúmeras\nfuncionalidades, como assinatura digital, verificação de assinaturas digitais, controle e validação de certificados, gerenciamento da solicitação e validação de carimbos do tempo, entre outras. Sendo assim suas funcionalidades baseiam-se essencialmente no provimento de serviços a outras aplicações.\n\nA autenticação nos serviços de assinatura disponibilizados pelo BRy Framework, deve\nser realizada através do atributo “fw_credencial” incluído no header das requisições. O valor deste atributo deve ser o login de acesso juntamente da senha, concatenados em uma String seguindo o padrão abaixo, codificado em Base64.\n\n* Supondo que o login do usuário é “usuario” e a senha é “123456789”;\n* Codificando a String “usuario+123456789” tem-se como resultado o valor\n“dXN1YXJpbysxMjM0NTY3ODk=”.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "CMS/CAdES",
+			"item": [
+				{
+					"name": "Inicializar Assinatura CMS/CAdES (Passo 01)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"key": "fw_credencial",
+								"value": "{{fw_credencial}}",
+								"description": "Credenciais de acesso ao BRy Framework <login+senha> codificado em base64"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"certificado\": \"{{certificado}}\",\r\n  \"algoritmoHash\" : \"SHA256\",\r\n  \"formatoDadosEntrada\": \"Base64\",\r\n  \"formatoDadosSaida\": \"Base64\",\r\n  \"nonces\" : [\"AAAA\"],\r\n  \"padrao\": \"CADES\",\r\n  \"perfil\": \"ADRB\",\r\n  \"formatoAssinatura\":\"HASH\",\r\n  \"coAssinatura\": false,\r\n  \"hashes\" : [\"RgcNS/k0+w1LBtnixG40aUTjIkRJAKQ119mpXm10NfU=\"]\r\n}"
+						},
+						"url": {
+							"raw": "http://{{url_hub}}/fw/v1/cms/pkcs1/assinaturas/acoes/inicializar",
+							"protocol": "http",
+							"host": [
+								"{{url_hub}}"
+							],
+							"path": [
+								"fw",
+								"v1",
+								"cms",
+								"pkcs1",
+								"assinaturas",
+								"acoes",
+								"inicializar"
+							]
+						},
+						"description": "###### **Cabeçalho da requisição**\n\n* **fw_credencial**: *Credenciais de acesso ao BRy Framework <login+senha> codificado em base64.*\n\n###### **Corpo da requisição**\n\n* **certificado**: *Certificado do signatário codificado em Base64.*\n* **algoritmoHash**: *String que representa o algoritmo de hash que será utilizado para gerar a assinatura.*\n* **formatoDadosEntrada**: *String indicando qual será o formato de codificação dos dados a serem assinados. [Valores disponíveis: Base64]*\n* **formatoDadosSaida**: *String indicando qual será o formato de codificação dos dados da resposta. [Valores disponíveis: Base64]*\n* **nonces**: *Array de strings com um conjunto de nonces gerados pela aplicação cliente para realizar o controle das assinaturas. Para cada arquivo encaminhado, deverá ser atribuído um nonce.*\n* **padrao**: *String representando o padrão de assinatura. [Valores disponíveis: CMS, CADES]*\n* **perfil**: *String representando o tipo de perfil desejado para a assinatura a ser gerada. [Valores disponíveis: “BASICA”, “CARIMBO”, \"ADRB\", \"ADRT\", \"ADRC\" e \"ADRA\"].*\n* **formatoAssinatura**: *Formato do processamento dos documentos recebidos na lista de hashes. [Valores disponíveis: \"HASH\", \"ATTACHED\" e \"DETACHED\"].*\n* **coAssinatura**: *Boolean representando se será realizado uma coassinatura. Valor padrão é false.*\n* **hashes**: *Array de strings com os contéudos a serem assinados. Atualmente se o formatoAssinatura for HASH deve ser enviado os resumos criptográficos (hashes) calculados a partir do documento original. Caso formatoAssinatura seja algum dos demais valores (ATTACHED ou DETACHED), deve ser enviado o conteúdo original do documento que se deseja assinar.*\n\n___________________________________________________________________________________________________________________________________________________________\n###### **Corpo da resposta**\n\n* **nonce**: *Nonce gerado pelo BRy Hub. Esta informação será utilizada na finalização da assinatura para a recuperação do contexto, logo, deverá ser armazenada e enviada na etapa subsequente.*\n* **formatoDadosEntrada**: *Formato de dados que deverá ser submetido à extensão para navegadores BRy com o objetivo de definir a codificação dos dados gerados. [Valores disponíveis : \"Base64\"]*\n* **formatoDadosSaida**: *Formato de dados que deverá ser submetido à extensão para navegadores BRy com o objetivo de definir a codificação dos dados gerados. [Valores disponíveis: Base64]*\n* **algoritmoHash**: *Algoritmo de hash que será utilizado para gerar a assinatura.*\n* **assinaturasInicializadas**: *Lista de assinaturas inicializadas que deverão ser submetidas a extensão para navegadores BRy para cifragem.*\n\t* **nonce**: *Conjunto de caracteres gerado pela aplicação cliente e encaminhada no corpo da requisição. Trata-se de um item da lista “nonces”.*\n\t* **messageDigest**: *Corresponde ao conteúdo da assinatura inicializada. Esta informação será cifrada utilizando a extensão para navegadores BRy (BRy Extension).*\n\t* **hash**: *Resumo criptográfico do documento original, enviado na inicialização da assinatura.*"
+					},
+					"response": []
+				},
+				{
+					"name": "Assinar - Este passo é executado no plugin para navegador (Passo 02)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "01 - Copiar o valor de \"messageDigest\" do retorno da execução do Passo 1 e colar no campo hashes do JSON de entrada do exemplo de execução do plugin para navegador.\n02 - Clicar em Gerar Assinatura.\n03 - Copiar o valor do campo hashes do JSON de saída e colar no campo \"cifrado\" do Passo 3.\n\n"
+						},
+						"url": {
+							"raw": ""
+						},
+						"description": "Este passo é executado no plugin de assinatura no navegador."
+					},
+					"response": []
+				},
+				{
+					"name": "Finalizar Assinatura CMS/CAdES (Passo 03)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nonce\": \"3063389262849361200\",\r\n    \"formatoDeDados\": \"Base64\",\r\n    \"assinaturasPkcs1\": [\r\n        {\r\n            \"cifrado\": \"ZgQ6JqkjHlC6OIw4epQMSDcbiJ1zysgVwHtGyKZlHpGlJdScDMp+15gLZTqjJ4Y0C3Qxx6+s/EnFydRVr78Z2oQyc4c5jU4g5IjnWaa4Z/wz6mmYfzMC8nTnExeFnhJ7T4X/ums/qNdf02bCPLG/KTBfVF0JfP+6HopwSpERWLdVVKfbsMLluPiC8d1a/0gFNvXokdlxlbp9POoMErE8b2UV2n0QpWV7xnKdXeWbqQsblcpOjZVadM4oyT+4NndgjkHadpZUwQajokbia79nTNluI0uJq4p20k6N6ST5zMZnqhnpK5gLdTyloF96Zz5k0bVUSNxscr1myOKvngOOGw==\",\r\n            \"nonce\": \"AAAA\"\r\n        }\r\n    ]\r\n}"
+						},
+						"url": {
+							"raw": "http://{{url_hub}}/fw/v1/cms/pkcs1/assinaturas/acoes/finalizar",
+							"protocol": "http",
+							"host": [
+								"{{url_hub}}"
+							],
+							"path": [
+								"fw",
+								"v1",
+								"cms",
+								"pkcs1",
+								"assinaturas",
+								"acoes",
+								"finalizar"
+							]
+						},
+						"description": "###### **Corpo da requisição**\n\n* **nonce**: *Nonce gerado pelo BRy Hub durante a inicialização.*\n* **formatoDeDados**: *Indica qual será o formato de codificação dos dados a serem assinados. [Valores disponíveis: Base64]*\n* **assinaturapkcs1**: *Array de assinaturas no formato PKCS#1 representando as assinaturas que serão utilizadas para a geração dos documentos assinados*\n\t* **cifrado**: *Corresponde ao conteúdo gerado pelo processo de cifragem dos message digests (retornados pela inicialização). Pode ser utilizado a extensão para navegadores da BRy para realizar a operação de cifragem.*\n\t* **messageDigest**: *Corresponde exatamente o valor do messageDigest retornado pela inicialização, antes do mesmo ser cifrado*.\n\t* **nonce**: *Conjunto de caracteres gerado pela aplicação cliente e encaminhada no corpo da requisição. Trata-se de um item da lista “nonces”.*\n\n___________________________________________________________________________________________________________________________________________________________\n###### **Corpo da resposta**\n\n* **padrao**: *O padrão de assinatura utilizado.*\n* **assinaturas**: *Array contendo as assinaturas propriamente ditas, codificadas em Base64.*"
+					},
+					"response": []
+				},
+				{
+					"name": "Assinar CMS/CAdES utilizando BRy KMS (Passo único)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"description": "Credenciais de acesso ao BRy Framework <login+senha> codificado em base64",
+								"key": "fw_credencial",
+								"value": "{{fw_credencial}}"
+							},
+							{
+								"description": "Senha de acesso ao certificado digital armazenado em Nuvem (BRy KMS) codificada em base64",
+								"key": "kms_credencial",
+								"value": "{{kms_credencial}}"
+							},
+							{
+								"description": "Tipo da credencial (PIN ou TOKEN)",
+								"key": "kms_credencial_tipo",
+								"value": "PIN"
+							},
+							{
+								"description": "Token de autorização para uso serviços do BRy Cloud",
+								"key": "auth_token",
+								"value": "{{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n\t\"signatario\" : \"{{cpf}}\",\n    \"algoritmoHash\" : \"SHA256\",\n    \"padrao\" : \"CMS\",\n    \"perfil\" : \"CARIMBO\",\n    \"formatoDadosEntrada\" : \"Base64\",\n    \"formatoAssinatura\" : \"ATTACHED\",\n    \"coAssinatura\": false,\n    \"hashes\" : [\"ZnJhbWV3b3JrOg0KICAjdXJsOiBodHRwczovL2Z3LmJyeS5jb20uYnINCiAgdXJsOiBodHRwczovL2Z3LWhvbS5icnkuY29tLmJyDQoNCmttczoNCiAgI3VybDogaHR0cHM6Ly9rbXMuYnJ5LmNvbS5ici9rbXMvcmVzdC92MQ0KICB1cmw6IGh0dHBzOi8va21zLWhvbS5icnkuY29tLmJyL2ttcy9yZXN0L3YxDQoNCnNwcmluZzoNCiAgYXBwbGljYXRpb246DQogICAgbmFtZTogaHViLWZ3DQogIG12YzoNCiAgICB0aHJvdy1leGNlcHRpb24taWYtbm8taGFuZGxlci1mb3VuZDogdHJ1ZQ0KICByZXNvdXJjZXM6DQogICAgYWRkLW1hcHBpbmdzOiBmYWxzZQ0KDQpzZXJ2ZXI6DQogIHRvbWNhdDoNCiAgICBtYXgtaHR0cC1wb3N0LXNpemU6IDEwNDg1NzYwMA0KICAgIG1heC10aHJlYWRzOiAxMDAwDQogICAgcG9ydDogODA4Mg0KICAgICMgIHNzbDoNCiAgICAjICAgIGVuYWJsZWQ6IGZhbHNlDQogICAgIyAgICBrZXktYWxpYXM6ICIiDQogICAgIyAgICBrZXktc3RvcmU6ICIiDQogICAgIyAgICBrZXktc3RvcmUtcGFzc3dvcmQ6IDEyMzQ1Ng0KDQptYW5hZ2VtZW50Og0KICBlbmRwb2ludHM6DQogICAgd2ViOg0KICAgICAgZXhwb3N1cmU6DQogICAgICAgIGluY2x1ZGU6ICIqIg0KICBtZXRyaWNzOg0KICAgIHRhZ3M6DQogICAgICBhcHBsaWNhdGlvbjogaHViLWZ3DQogIA0KDQojIENvbmZpZ3VyYcOnw6NvIGRvIGxvY2FsIG9uZGUgc2Vyw6EgYXJtYXplbmFkbyBvcyBhcnF1aXZvcyBkZSBsb2cuDQojIHBhdGg6IGNhbWluaG8gYXTDqSBhIHBhc3RhIGVtIHF1ZSBzZXLDoSBzYWx2bw0KIyBmaWxlOiBub21lIGRvIGFycXVpdm8gZGUgbG9nDQojDQojIERpYXJpYW1lbnRlLCBvcyBhcnF1aXZvcyBkZSBsb2cgZG8gZGlhIGFudGVyaW9yIHPDo28gbW92aWRvcyBwYXJhIHVtYSBwYXN0YSAiYXJxdWl2b3MiIGludGVybmEgw6AgcGFzdGEgZGVmaW5pZGEgbmEgdsOhcmlhdmVsICJwYXRoIi4gDQojIE8gYXJxdWl2byBkbyBkaWEgYXR1YWwgZmljYSBzZW1wcmUgbmEgcGFzdGEgZGVmaW5pZGEgZW0gInBhdGgiIGNvbSBvIG5vbWUgZGVmaW5pZG8gZW0gImZpbGUiDQojDQojIEFzIHZhcmnDoXZlaXMgR1JBWUxPR19IT1NULCBHUkFZTE9HX1BPUlQgZSBHUkFZTE9HX0ZBQ0lMSVRZX05BTUUgc8OjbyB1dGlsaXphZGFzIHBhcmEgY29uZmlndXJhw6fDo28gZG8gZ3JheWxvZy4NCiMgRXg6DQojICBHUkFZTE9HX0hPU1Q6IGdyYXlsb2cueC5jb20uYnINCiMgIEdSQVlMT0dfUE9SVDogMTIyMDENCiMgIEdSQVlMT0dfRkFDSUxJVFlfTkFNRTogYnJ5LWh1Yg0KIw0KIyBDYXNvIG7Do28gcG9zc3VhIGdyYXlsb2csIG1hbnRlbmhhIG9zIHZhbG9yZXMgZW0gYnJhbmNvLg0KDQpsb2dnaW5nOg0KICBsZXZlbDogDQogICAgYnIuY29tLmJyeS5odWI6IGRlYnVnDQogICAgb3JnOiBlcnJvcg0KICBwYXRoOiBDOlxcaHViXFxodWItZndcXGxvZ3MNCiAgZmlsZTogaHViLWZ3DQogIEdSQVlMT0dfSE9TVDogDQogIEdSQVlMT0dfUE9SVDogDQogIEdSQVlMT0dfRkFDSUxJVFlfTkFNRTogDQogIA0KIyBDb25maWd1cmHDp8OjbyByZWZlcmVudGUgw6AgbGljZW7Dp2EgZG8gQlJ5LUhVQiAgICANCiMNCiMgQXMgdmFyacOhdmVpcyAiY21zIiBlICJwZGYiIGRldmVtIHNlciBwcmVlbmNoaWRhcyBjb20gb3MgdmFsb3JlcyBlbnZpYWRvcy4gQ2FzbyBuw6NvIHBvc3N1YSBvcyBkb2lzIHZhbG9yZXMsIGRlaXhlIG8gcXVlIG7Do28gcG9zc3VhIGVtIGJyYW5jby4NCiMgRXg6IA0KIyAgIGNtczogYWJjZGVmZw0KIyAgIHBkZjogDQoNCmxpY2Vuc2U6DQogIGNtczogaWxhV2NUbEI5TzFGMWNxaithME5pdkpMRXA5cWgvdkFHRFdnb0d5VldLS3VmQ1drUXRwUUVLSTV2aXJpTkVMeEYwWDdZV3cwSCtGTzF2UEJMYXptamoxTnU0eXRjbXRSZkJSbm9KTGRLRGV6cjBMelM0UmRxTS90NjgzRCt5aks5eVU4Q0JZQmhDT2dCcGgycXl2NkNxeURhdmMyTVNKWDlOZnNqV0tnTWJTQ2czSzVtbGszVERXN0hXdXh6ckQzbklWTktRNWRISXlIV0xmazRCNEsyM0NTenphQlI3a0NldlBucldLUjBPck41cjdNYzEyU3JHYUJFWENxSlhqSDlIR2JGY0U2c3ZTcEdwQUVRbGVPaEUrcklubE9iS3pMNnRhVWhSeEZob0dsem5rc3RHSDN2WTVleUpacTRFWDV2bHJibWlIYnYvTDFkRklOYlBDb0pRPT0NCiAgcGRmOiBSaFN3OVYydElvVXBmNFY5SzRVYi9OSlhia2svd3R0ZlZTZXNhbGRHNmIxM3p2SWZUa2x2alFvOWxPTDdPKzk2MjRHTFVzUDVYVlVoV3VrakdGSXNDOVJod2dvVW9Dek1WNGU2cHpWdThvUURzN3lCOVQvT0hQR3pmbGhkYkowVzhZcjFmQm0zTk5Rc2h2UytRZVdvd0oxZHcyZkhpcFp2MXg1TlE4em9GaUVUSkMrVWttcHVqZEJGSVBWaFMwWUNhSUhETHRUUk9NTDYvVVBKeGxSeXg2MU9rY3NZRFc2UWZKNXpLNzByS1FzVzllZ1AydVNGVGRkcEJoNzVzeG5jK1djK2ZWS3RwK3MrR3laaURqWG5wNkJ2RDY1WVpybE9iaUlnS2dvM2JwZVhPaFNEbGdQem9ONENOOGJyUGVTNFQrbUJ2TE9LWVJWdTd4QlJVOThiWHc9PQ==\"]\n}"
+						},
+						"url": {
+							"raw": "http://{{url_hub}}/fw/v1/cms/kms/assinaturas",
+							"protocol": "http",
+							"host": [
+								"{{url_hub}}"
+							],
+							"path": [
+								"fw",
+								"v1",
+								"cms",
+								"kms",
+								"assinaturas"
+							]
+						},
+						"description": "###### **Cabeçalho da requisição**\n\n* **fw_credencial**: *Credenciais de acesso ao BRy Framework <login+senha> codificado em base64.*\n* **kms_credencial**: *Chave de autorização (PIN) do usuário signatário codificada no formato Base64.*\n* **kms_credencial_tipo**: *Tipo da credencial fornecida. Atualmente só há suporte para o formato “PIN”.*\n* **auth_token**: *Token de autenticação da PJ cadastrada no BRy Cloud.*\n\n###### **Corpo da requisição**\n\n* **signatario**: *CPF do usuário signatário. A partir desta informação, o compartimento, bem como a chave, será recuperado.*\n* **algoritmoHash**: *String que representa o algoritmo de hash que será utilizado para gerar a assinatura. [Valores disponíveis: \"SHA1\", \"SHA256\" e \"SHA512\"].*\n* **padrao**: *Indica o padrão da assinatura que será gerada. [Valores disponíveis: \"CMS\", \"CADES\"]*\n* **perfil**: *String representando o tipo de perfil desejado para a assinatura a ser gerada. [Valores disponíveis: BASICA, CARIMBO, ADRB, ADRT]*\n* **formatoDados**: *String indicando qual será o formato de codificação dos dados a serem assinados. [Valores disponíveis: Base64]*\n* **hashes**: *Array de strings contendo os resumos criptográficos (hashes) calculados a partir dos documentos originais.*\n* **coAssinatura**: *Boolean representando se será realizado uma coassinatura. Valor padrão é false.*\n\n________________________________________________________________________________________________________________________________________________________________________________________\n###### **Corpo da resposta**\n\n* **cnSignatario**: *O nome do assinante, representado pelo campo CN do certificado*\n* **assinaturas**: *Array das assinaturas, codificadas em Base64.*"
+					},
+					"response": []
+				},
+				{
+					"name": "Assinar CMS/CAdES utilizando PKCS12 (Passo único)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/json"
+							},
+							{
+								"description": "Senha do PFX codificada em Base64.",
+								"key": "pfx",
+								"type": "text",
+								"value": "{{password}}"
+							},
+							{
+								"description": "Credenciais de acesso ao BRy Framework <login+senha> codificado em base64",
+								"key": "fw_credencial",
+								"type": "text",
+								"value": "{{fw_credencial}}"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{  \r\n   \"signatario\": \"certificado_teste_hub\",\r\n   \"algoritmoHash\":\"SHA256\",\r\n   \"perfil\":\"BASICA\",\r\n   \"formatoDados\":\"Base64\",\r\n   \"hashes\":[  \r\n      \"o+55vve0GAC27ZhbWp23umyDMgcCo++TMNC1JC92iaI=\"\r\n   ]\r\n\t\r\n}"
+						},
+						"url": {
+							"raw": "http://{{url_hub}}/fw/v1/cms/pkcs12/assinaturas",
+							"protocol": "http",
+							"host": [
+								"{{url_hub}}"
+							],
+							"path": [
+								"fw",
+								"v1",
+								"cms",
+								"pkcs12",
+								"assinaturas"
+							]
+						},
+						"description": "###### **Cabeçalho da requisição**\n\n* **fw_credencial**: *Credenciais de acesso ao BRy Framework <login+senha> codificado em base64.*\n* **pfx**: *Senha do PKCS12 (.pfx/.p12) configurado para a assinatura. Deve ser fornecido em formato Base64.*\n\n###### **Corpo da requisição**\n\n* **signatario**: *Nome do arquivo pfx/p12*\n* **algoritmoHash**: *String que representa o algoritmo de hash que será utilizado para gerar a assinatura.*\n* **perfil**: *String representando o tipo de perfil desejado para a assinatura a ser gerada. [Valores disponíveis: “BASICA”, “CARIMBO”, \"ADRB\", \"ADRT\", \"ADRC\" e \"ADRA\"].*\n* **formatoDados**: *String indicando qual será o formato de codificação dos dados a serem assinados. [Valores disponíveis: Base64]*\n* **formatoAssinatura**: *Formato do processamento dos documentos recebidos na lista de hashes. [Valores disponíveis: \"HASH\", \"ATTACHED\" e \"DETACHED\"].*\n* **hashes**: *Array de strings com os contéudos a serem assinados. Atualmente se o formatoAssinatura for HASH deve ser enviado os resumos criptográficos (hashes) calculados a partir do documento original. Caso formatoAssinatura seja algum dos demais valores (ATTACHED ou DETACHED), deve ser enviado o conteúdo original do documento que se deseja assinar.*\n* **coAssinatura**: *Boolean representando se será realizado uma coassinatura. Valor padrão é false.*\n\n___________________________________________________________________________________________________________________________________________________________\n###### **Corpo da resposta**\n\n* **padrao**: *O padrão da assinatura realizada*\n* **assinaturas**: *Array das assinaturas, codificadas em Base64.*"
+					},
+					"response": []
+				}
+			],
+			"description": "#### Geração de assinatura com o BRy HUB\n\n1. ###### Formato da assinatura\nO padrão CMS/CAdES no BRy HUB-SDK \naceita apenas um formato para a geração da assinatura:\n\t* assinatura baseada em *hash*\n\t\t* assinatura do tipo detached, onde o documento não é anexado na estrutura da assinatura;\n\t\t* necessário enviar ao serviço apenas o resumo criptográfico (*hash*) do documento original que se deseja assinar;\n\t* assinatura detached\n\t\t* necessário enviar o documento original (codificado em Base64) pelo qual será calculado o resumo criptográfico que será anexado na estrutura da assinatura;\n\t* assinatura attached\n\t\t* necessário enviar o documento original (codificado em Base64) que será anexado na estrutura da assinatura\n2. ###### Métodos disponíveis para geração da assinatura CMS/CAdES\n\t1. ###### Assinatura com certificado armazenado no navegador\n\tVisando permitir a geração de assinaturas em sistemas Web, a solução cliente deverá estar integrada com a extensão para navegadores BRy (BRy Extension), que será responsável por listar e acessar as propriedades dos certificados instalados na máquina do cliente. Neste modo, denominado PKCS#1, o processo de assinatura é dividido em duas etapas, denominadas **inicialização** e **finalização**. Na primeira, é enviada uma requisição no formato JSON para o BRy HUB para que gere uma estrutura denominada message digest. Estes serão devolvidos para a página, onde a extensão para navegadores BRy (BRy Extension), utilizará o certificado selecionado para cifrar esta informação. É importante salientar que a chave privada do certificado não será trafegada em nenhum momento, ou seja, todo o processo de cifragem ocorrerá no lado do cliente. Na segunda etapa, ou finalização, os atributos cifrados são encaminhados novamente para o BRy HUB, no formato JSON. A resposta desta requisição estará no formato JSON, contendo as assinaturas digitais no formato PKCS#7 (.p7s), codificadas em Base64. Para maiores informações de como configurar as requisições, as respostas que são retornadas, e demais eventualidades, consulte a sua documentação.\n![Processo em dois passos](https://i.imgur.com/Z5Bb2IN.png)\n\t2. ###### Assinatura com certificado em arquivo\n\tEste método utiliza o arquivo do certificado (formato PKCS#12), que contém o certificado e sua respectiva chave privada. É uma maneira mais simples de realizar a assinatura, porém não muito segura, tendo em vista que a chave privada do usuário é trafegada e enviada ao servidor. Além disso, é necessário também enviar ao servidor a senha do arquivo PKCS#12. Neste método, a geração da assinatura é realizada em um passo único. É necessário enviar a senha do arquivo .p12(.pfx) no header da requisição. Essa senha deve estar codificada em Base64.\n\n\t3. ###### Assinatura com certificado armazenados na nuvem\n\tVisando permitir assinaturas digitais em um cenário onde os certificados digitais são armazenados em HSM, mais especificamente na solução BRy KMS, a API do BRy HUB disponibiliza um recurso que suporta esta funcionalidade. Basicamente, a aplicação cliente enviará uma requisição contendo o documento ou uma lista de hashes que deseja assinar, bem como as configurações necessárias para realização desta assinatura. Para utilização deste modo de assinatura, é necessário informar uma lista de hashes, além das demais informações referentes as características da assinatura. Neste método, a geração da assinatura é realizada em um passo **único**.\n\t\t###### Credenciais de acesso\n\t\tPara utilizar esta funcionalidade, é necessário a inclusão das credenciais de acesso no header da requisição.\n\t\n\t\t**BRy Cloud**\n\t\t\t\n\t\tA autenticação no portal de serviços – BRy Cloud – deve ser realizada através do atributo “auth_token” incluído no header da requisição. O valor deste atributo deve ser o token de aplicação gerado junto ao portal BRy Cloud. Contas corporativas podem gerar um token de Pessoa Jurídica através da interface do BRy Cloud, no menu “Gestão/Minhas Aplicações”. Maiores informações podem ser obtidas no manual do BRy Cloud.\n\n\t\t**BRy KMS**\n\t\t\t\n\t\tPara realização das operações de assinatura com certificados armazenados na plataforma BRy KMS, é necessário que sejam configurados os atributos “kms_credencial” e “kms_credencial_tipo” no cabeçalho das requisições.\n\t\t\t\n\t\t* kms_credencial_tipo: podem ser atribuídos os valores “PIN” e “TOKEN.\n\t\t* kms_credencial: caso seja atribuído o tipo “PIN”, o valor deste atributo deverá ser o PIN do certificado, codificado em Base64. Caso seja atribuído o tipo “TOKEN”, o valor deste atributo deverá ser o token de pré autorização gerado previamente.\n\n\t![Processo com KMS](https://i.imgur.com/E5bU3PP.png)"
+		},
+		{
+			"name": "PDF/PAdES",
+			"item": [
+				{
+					"name": "Inicializar Assinatura PDF/PAdES (Passo 01)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "fw_credencial",
+								"value": "{{fw_credencial}}",
+								"type": "text",
+								"description": "Credenciais de acesso ao BRy Framework <login+senha> codificado em base64"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "documento",
+									"description": "Arquivo PDF a ser assinado",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "imagem",
+									"description": "Arquivo com a imagem que representará a assinatura",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "dados_inicializar",
+									"value": "{\"perfil\" : \"CARIMBO\", \n\"algoritmoHash\" : \"SHA256\", \n\"formatoDadosEntrada\" : \"Base64\", \n\"formatoDadosSaida\" : \"Base64\", \n\"certificado\": \"{{certificado}}\",\n\"nonces\": [\"\"]\n}\n",
+									"description": "O valor do campo certificado é obtido através do plugin. No exemplo é campo \"Certificado\".  No código Javascript o valor é obtido em \"certificate.certificateData\"",
+									"type": "text"
+								},
+								{
+									"key": "documento",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								},
+								{
+									"key": "configuracao_imagem",
+									"value": "{\"altura\" : 60,  \"largura\" : 170, \"posicao\" : \"INFERIOR_ESQUERDO\", \"pagina\" : \"PRIMEIRA\"}",
+									"description": "Configurações do campo de assinatura",
+									"type": "text"
+								},
+								{
+									"key": "configuracao_texto",
+									"value": "{\n\"texto\" : \"Assinado por .\" ,\n\"incluirCN\" : true,\n\"incluirCPF\" : true,\n\"incluirEmail\" : true\n}",
+									"description": "Configurações do texto que será adicionado ao campo de assinatura",
+									"type": "text",
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{url_hub}}/fw/v1/pdf//pkcs1/assinaturas/acoes/inicializar",
+							"protocol": "http",
+							"host": [
+								"{{url_hub}}"
+							],
+							"path": [
+								"fw",
+								"v1",
+								"pdf",
+								"",
+								"pkcs1",
+								"assinaturas",
+								"acoes",
+								"inicializar"
+							]
+						},
+						"description": "###### **Cabeçalho da requisição**\n\n* **fw_credencial**: *Credenciais de acesso ao BRy Framework <login+senha> codificado em base64.*\n\n###### **Corpo da requisição**\n\n* **documento**: *Documento no formato PDF que será assinado.*\n* **imagem**: *Imagem que será inserida no campo de assinatura. Atualmente os formatos suportados são JPEG, PNG e BMP.*\n* **imagemFundo**: *Imagem que será inserida ao fundo do campo de assinatura. Atualmente os formatos suportados são JPEG, PNG e BMP.*\n* **dados_inicializar**: *Identificação do signatário (chave pública do certificado digital) e configurações básicas da assinatura (algoritmo de hash e perfil). Deve ser informado no formato JSON.*\n\t* **perfil**: *Perfil da assinatura que será gerada. [Valores disponíveis: “BASICA”, “CARIMBO”, ADRB\", \"ADRT\", \"ADRC\" e \"ADRA\"].*\n\t* **algoritmoHash**: *Algoritmo de hash que será utilizado para gerar a assinatura. [Valores disponíveis: “SHA1”, “SHA256” e “SHA512”]*\n\t* **formatoDadosEntrada**: *Indica ao Web serviço qual será o formato de codificação de dados. [Valores disponíveis: “Base64”].*\n\t* **formatoDadosSaida**: *Indica ao Web serviço qual será o formato de codificação de dados. [Valores disponíveis: “Base64”].*\n\t* **certificado**: *Certificado do signatário codificado em Base64.*\n\t* **nonces**: *Array de strings com um conjunto de nonces gerados pela aplicação cliente para realizar o controle das assinaturas. Para cada arquivo encaminhado, deverá ser atribuído um nonce.*\n* **configuracao_imagem**: *Configuração dos parâmetros de posição, dimensão e visualização da imagem. Deve ser informado no formato JSON.*\n\t* **altura**: *Altura da imagem que será inserida.*\n\t* **largura**: *Largura da imagem que será inserida.*\n\t* **coordenadaX**: *Define o deslocamento horizontal da imagem em relação ao canto inferior esquerdo da página. Valores positivos deslocam a imagem para a direita e para cima, enquanto negativos para a esquerda e para baixo.*\n\t* **coordenadaY**: *Define o deslocamento vertical da imagem em relação ao canto inferior esquerdo da página. Valores positivos deslocam a imagem para a direita e para cima, enquanto negativos para a esquerda e para baixo.*\n\t* **posicao**: *Define a posição da imagem em relação aos quatro cantos da página. [Valores disponíveis: “INFERIOR_DIREITO”, “INFERIOR_ESQUERDO”, “SUPERIOR_DIREITO” e “SUPERIOR_ESQUERDO”].*\n\t* **pagina**: *Define a(s) página(s) na qual a imagem será adicionada. [Valores disponíveis: “PRIMEIRA”, “ULTIMA” e “TODAS”].*\n\t* **numeroPagina**: *Define o índice da página na qual a imagem será adicionada. A contagem do índice de páginas inicia em 1.*\n\t* **campoAssinatura**: *Define o nome do campo preexistente no documento onde a assinatura será visível.*\n\t* **posicaoBorda**: *Define que a imagem será posicionada centralizada em uma das bordas da página. [Valores disponíveis: “BORDA_DIREITA”, “BORDA_ESQUERDA”, “BORDA_INFERIOR” e “BORDA_SUPERIOR”].*\n\t* **rotacaoImagemBorda**: *Define a rotação da imagem para os casos de página em modo paisagem ou imagem de assinatura posicionada na borda.[Valores disponíveis: ANTI_HORARIO_90_GRAUS e HORARIO_90_GRAUS].*\n\t* **imagemInvertida**: *Booleano que inverte a posição da imagem e do texto. O comportamento padrão é que a imagem (quando não for imagem de fundo) ficam do lado esquerdo da imagem da assinatura, enquanto o texto fica do lado direito. Definindo esta opção como true, a imagem ou nome do signatário ficarão do lado direito e o texto do lado esquerdo.*\n\t* **proporcaoImagem**: *Inteiro que define a proporção de espaço que a imagem ocupará em relação ao texto da assinatura. O valor padrão é 50, que indica que a imagem ocupará metade do espaço e o texto a outra metade. Valores menores que 50 indicam que a imagem ocupará uma parte menor do retângulo da assinatura, enquanto valores maiores farão com que ela ocupe um espaço maior no retângulo.*\n* **configuracao_texto**: *Configuração do texto que será inserido na assinatura. Deve ser informado no formato JSON.*\n\t* **texto**: *Define o texto que será incluído no campo da assinatura.*\n\t* **incluirCN**: *Define se o campo CN do certificado do signatário será incluído no texto da assinatura.*\n\t* **incluirCPF**: *Define se o campo CPF do certificado do signatário será incluído no texto da assinatura.*\n\t* **incluirEmail**: *Define se o campo Email do certificado do signatário será incluído no texto da assinatura.*\n\t* **rotacaoTexto**: *Define a rotação do texto. [Valores disponíveis: \"ANTI_HORARIO_90_GRAUS\" e \"HORARIO_90_GRAUS\"].*\n\n_______________________________________________________________________________________________________________________________________________________________________________________\n###### **Corpo da resposta**\n\n* **padrao**: *Indica o padrão da assinatura.*\n* **perfil**: *Perfil indicado na inicialização da assinatura.*\n* **algoritmoHash**: *Algoritmo de hash que foi utilizado durante a inicialização. [Valores disponíveis: “SHA1”, “SHA256” e “SHA512”].*\n* **nonce**: *Nonce gerado pelo BRy Hub. Esta informação será utilizada na finalização da assinatura para a recuperação do contexto, logo, deverá ser armazenada e enviada na etapa subsequente.*\n* **formatoDadosEntrada**: *Formato de dados que deverá ser submetido à extensão para navegadores BRy com o objetivo de definir a codificação dos dados gerados. Aceita somente o valor “Base64”.*\n* **formatoDadosSaida**: *Formato de dados que deverá ser submetido à extensão para navegadores BRy com o objetivo de definir a codificação dos dados gerados. Aceita somente o valor “Base64”.*\n* **assinaturasInicializadas**: *Lista de assinaturas inicializadas que deverão ser submetidas a extensão para navegadores BRy para cifragem.*\n\t* **nonce**: *Conjunto de caracteres gerado pela aplicação cliente e encaminhada no corpo da requisição. Trata-se de um item da lista “nonces”.*\n\t* **messageDigest**: *Corresponde ao conteúdo da assinatura inicializada. Esta informação será cifrada utilizando a extensão para navegadores BRy.*"
+					},
+					"response": []
+				},
+				{
+					"name": "Assinar - Este passo é executado no plugin para navegador (Passo 02)",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "01 - Copiar o valor de \"messageDigest\" do retorno da execução do Passo 1 e colar no campo hashes do JSON de entrada do exemplo de execução do plugin para navegador.\n02 - Clicar em Gerar Assinatura.\n03 - Copiar o valor do campo hashes do JSON de saída e colar no campo \"cifrado\" do Passo 3.\n\n"
+						},
+						"url": {
+							"raw": ""
+						},
+						"description": "Este passo é executado no plugin de assinatura no navegador."
+					},
+					"response": []
+				},
+				{
+					"name": "Finalizar Assinatura PDF/PAdES (Passo 03)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"nonce\": \"-6185016147352064878\",\r\n    \"formatoDeDados\": \"Base64\",\r\n    \"assinaturasPkcs1\": [\r\n        {\r\n           \"cifrado\": \"WPq/2MZXUg8pLwmDQfgon7cdJiLZzb8YtO/4ObVpvtp0ehnkf+uWtRS+13gFbITxQsq+lmJZiP3w947FxATmYiyLfNHtTr7eEw01iqSe4wAtTNZoISwPgWfoBZDUumDl255WGrWc+n7rWnhfRzmOfgRxZ9V0znAwCR4jO6xWVln98+yCalJ68CwIzvcfzvsDqJCgJPFjHbuSo3P1S/na9hJ1X1r5Dv6hcCy0pJ+121V6ucaZnGLpF8uhEyCV+Exr0kdplwhstu4XkxFk6tTybn7tcJxA9ce58Pk/orLrnCfRs9ZEzN2yVC3lwlgBSLXdLGqv0/itdfTJNwPL+WPZqg==\",\r\n            \"nonce\": \"3205636276294151466930561114943867018272\"\r\n        }\r\n    ]\r\n}"
+						},
+						"url": {
+							"raw": "http://{{url_hub}}/fw/v1/pdf/pkcs1/assinaturas/acoes/finalizar",
+							"protocol": "http",
+							"host": [
+								"{{url_hub}}"
+							],
+							"path": [
+								"fw",
+								"v1",
+								"pdf",
+								"pkcs1",
+								"assinaturas",
+								"acoes",
+								"finalizar"
+							]
+						},
+						"description": "###### **Corpo da requisição**\n\n* **nonce**: *Nonce gerado pelo BRy Hub durante a inicialização.*\n* **formatoDeDados**: *Formato de dados utilizando durante o processo. Atualmente só há suporte para a codificação “Base64”.*\n* **assinaturasPkcs1**: *Lista de assinaturas no formato PKCS#1 que serão utilizadas para a geração do documento assinado.*\n\t* **cifrado**: *Corresponde ao conteúdo gerado pelo processo de cifragem dos message digests pela extensão para navegadores BRy. Este conteúdo se trata de uma cifra no formato PKCS#1.*\n\t* **nonce**: *Conjunto de caracteres gerado pela aplicação cliente e encaminhada no corpo da requisição. Trata-se de um item da lista “nonces”.*\n\n_____________________________________________________________________________________________________________________________________________\n###### **Corpo da resposta**\n\n* **identificador**: *Identificador do lote.*\n* **quantidadeAssinaturas**: *Quantidade total de assinaturas realizadas no lote.*\n* **documentos**: *Array de documentos assinados.*\n\t* **nonce**: *Conjunto de caracteres gerado pela aplicação cliente e encaminhada no corpo da requisição. Trata-se de um item da lista “nonces”.*\n\t* **hash**: *Hash do documento. É o seu identificador único.*\n\t* **links**: *Array com link, seguindo o princípio HATEOAS.*\n\t\t* **rel**: *“self” (representa uma auto referência do objeto em questão)*\n\t\t* **href**: *URL (Define o identificador único do recurso)*"
+					},
+					"response": []
+				},
+				{
+					"name": "Assinar PDF/PAdES utilizando BRy KMS (Passo único)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"description": "Credenciais de acesso ao BRy Framework <login+senha> codificado em base64",
+								"key": "fw_credencial",
+								"value": "{{fw_credencial}}"
+							},
+							{
+								"description": "Senha de acesso ao certificado digital armazenado em Nuvem (BRy KMS) codificada em base64",
+								"key": "kms_credencial",
+								"value": "{{kms__credencial}}"
+							},
+							{
+								"description": "Tipo da credencial (PIN ou TOKEN)",
+								"key": "kms_credencial_tipo",
+								"value": "PIN"
+							},
+							{
+								"description": "Token de autorização para uso serviços do BRy Cloud",
+								"key": "auth_token",
+								"value": "{{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "dados_assinatura",
+									"value": "{\n  \"signatario\" : \"{{cpf}}\",\n  \"algoritmoHash\" : \"SHA256\",\n  \"perfil\" : \"ADRB\"\n}",
+									"description": "Dados para do assinante e tipo de assinatura digital",
+									"type": "text"
+								},
+								{
+									"key": "documento",
+									"description": "Arquivo PDF que será assinado",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "imagem",
+									"description": "Arquivo de imagem que será adicionado ao campo de assinatura",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "configuracao_imagem",
+									"value": "{\"altura\" : 60,  \"largura\" : 170,  \"coordenadaX\" : 70,  \"coordenadaY\" : 150,  \"posicao\" : \"INFERIOR_ESQUERDO\", \"pagina\" : \"PRIMEIRA\"}",
+									"description": "Configurações do campo de assinatura",
+									"type": "text"
+								},
+								{
+									"key": "configuracao_texto",
+									"value": "{\n\"texto\" : \"Assinado por .\" ,\n\"incluirCN\" : true,\n\"incluirCPF\" : true,\n\"incluirEmail\" : true\n}",
+									"description": "Configurações do texto que será adicionado ao campo de assinatura",
+									"type": "text"
+								},
+								{
+									"key": "documento",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{url_hub}}/fw/v1/pdf/kms/assinaturas",
+							"protocol": "http",
+							"host": [
+								"{{url_hub}}"
+							],
+							"path": [
+								"fw",
+								"v1",
+								"pdf",
+								"kms",
+								"assinaturas"
+							]
+						},
+						"description": "###### **Cabeçalho da requisição**\n\n* **fw_credencial**: *Credenciais de acesso ao BRy Framework <login+senha> codificado em base64.*\n* **kms_credencial**: *Chave de autorização (PIN) do usuário signatário codificada no formato Base64.*\n* **kms_credencial_tipo**: *Tipo da credencial fornecida. Atualmente só há suporte para o formato “PIN”.*\n* **auth_token**: *Token de autenticação da PJ cadastrada no BRy Cloud.*\n\n###### **Corpo da requisição**\n\n* **documento**: *Documento no formato PDF que será assinado.*\n* **imagem**: *Imagem que será inserida no campo de assinatura. Atualmente os formatos suportados são JPEG, PNG e BMP.*\n* **imagemFundo**: *Imagem que será inserida ao fundo do campo de assinatura. Atualmente os formatos suportados são JPEG, PNG e BMP.*\n* **dados_inicializar**: *Identificação do signatário (chave pública do certificado digital) e configurações básicas da assinatura (algoritmo de hash e perfil). Deve ser informado no formato JSON.*\n\t* **perfil**: *Perfil da assinatura que será gerada. [Valores disponíveis: “BASICA”, “CARIMBO”, \"ADRB\", \"ADRT\", \"ADRC\" e \"ADRA\"].*\n\t* **algoritmoHash**: *Algoritmo de hash que será utilizado para gerar a assinatura. [Valores disponíveis: “SHA1”, “SHA256” e “SHA512”]*\n\t* **formatoDadosEntrada**: *Indica ao Web serviço qual será o formato de codificação de dados. [Valores disponíveis: “Base64”].*\n\t* **formatoDadosSaida**: *Indica ao Web serviço qual será o formato de codificação de dados. [Valores disponíveis: “Base64”].*\n\t* **certificado**: *Certificado do signatário codificado em Base64.*\n\t* **nonces**: *Array de strings com um conjunto de nonces gerados pela aplicação cliente para realizar o controle das assinaturas. Para cada arquivo encaminhado, deverá ser atribuído um nonce.*\n* **configuracao_imagem**: *Configuração dos parâmetros de posição, dimensão e visualização da imagem. Deve ser informado no formato JSON.*\n\t* **altura**: *Altura da imagem que será inserida.*\n\t* **largura**: *Largura da imagem que será inserida.*\n\t* **coordenadaX**: *Define o deslocamento horizontal da imagem em relação ao canto inferior esquerdo da página. Valores positivos deslocam a imagem para a direita e para cima, enquanto negativos para a esquerda e para baixo.*\n\t* **coordenadaY**: *Define o deslocamento vertical da imagem em relação ao canto inferior esquerdo da página. Valores positivos deslocam a imagem para a direita e para cima, enquanto negativos para a esquerda e para baixo.*\n\t* **posicao**: *Define a posição da imagem em relação aos quatro cantos da página. [Valores disponíveis: “INFERIOR_DIREITO”, “INFERIOR_ESQUERDO”, “SUPERIOR_DIREITO” e “SUPERIOR_ESQUERDO”].*\n\t* **pagina**: *Define a(s) página(s) na qual a imagem será adicionada. [Valores disponíveis: “PRIMEIRA”, “ULTIMA” e “TODAS”].*\n\t* **numeroPagina**: *Define o índice da página na qual a imagem será adicionada. A contagem do índice de páginas inicia em 1.*\n\t* **campoAssinatura**: *Define o nome do campo preexistente no documento onde a assinatura será visível.*\n\t* **posicaoBorda**: *Define que a imagem será posicionada centralizada em uma das bordas da página. [Valores disponíveis: “BORDA_DIREITA”, “BORDA_ESQUERDA”, “BORDA_INFERIOR” e “BORDA_SUPERIOR”].*\n\t* **rotacaoImagemBorda**: *Define a rotação da imagem para os casos de página em modo paisagem ou imagem de assinatura posicionada na borda.[Valores disponíveis: ANTI_HORARIO_90_GRAUS e HORARIO_90_GRAUS].*\n\t* **imagemInvertida**: *Booleano que inverte a posição da imagem e do texto. O comportamento padrão é que a imagem (quando não for imagem de fundo) ficam do lado esquerdo da imagem da assinatura, enquanto o texto fica do lado direito. Definindo esta opção como true, a imagem ou nome do signatário ficarão do lado direito e o texto do lado esquerdo.*\n\t* **proporcaoImagem**: *Inteiro que define a proporção de espaço que a imagem ocupará em relação ao texto da assinatura. O valor padrão é 50, que indica que a imagem ocupará metade do espaço e o texto a outra metade. Valores menores que 50 indicam que a imagem ocupará uma parte menor do retângulo da assinatura, enquanto valores maiores farão com que ela ocupe um espaço maior no retângulo.*\n* **configuracao_texto**: *Configuração do texto que será inserido na assinatura. Deve ser informado no formato JSON.*\n\t* **texto**: *Define o texto que será incluído no campo da assinatura.*\n\t* **incluirCN**: *Define se o campo CN do certificado do signatário será incluído no texto da assinatura.*\n\t* **incluirCPF**: *Define se o campo CPF do certificado do signatário será incluído no texto da assinatura.*\n\t* **incluirEmail**: *Define se o campo Email do certificado do signatário será incluído no texto da assinatura.*\n\t* **rotacaoTexto**: *Define a rotação do texto. [Valores disponíveis: \"ANTI_HORARIO_90_GRAUS\" e \"HORARIO_90_GRAUS\"].*\n\n_______________________________________________________________________________________________________________________________________________________________________\n\n###### **Corpo da resposta**\n\n* **documento**: *PDF assinado no formato array de bytes.*"
+					},
+					"response": []
+				},
+				{
+					"name": "Assinar PDF/PAdES (em lote) utilizando BRy KMS (Passo único)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"description": "Credenciais de acesso ao BRy Framework <login+senha> codificado em base64",
+								"key": "fw_credencial",
+								"value": "{{fw_credencial}}"
+							},
+							{
+								"description": "Senha de acesso ao certificado digital armazenado em Nuvem (BRy KMS) codificada em base64",
+								"key": "kms_credencial",
+								"value": "{{kms_credencial}}"
+							},
+							{
+								"description": "Tipo da credencial (PIN ou TOKEN)",
+								"key": "kms_credencial_tipo",
+								"value": "PIN"
+							},
+							{
+								"description": "Token de autorização para uso serviços do BRy Cloud",
+								"key": "auth_token",
+								"value": "{{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "dados_assinatura",
+									"value": "{\n  \"signatario\" : \"{{cpf}}\",\n  \"algoritmoHash\" : \"SHA256\",\n  \"perfil\" : \"ADRB\"\n}",
+									"description": "Dados para do assinante e tipo de assinatura digital",
+									"type": "text"
+								},
+								{
+									"key": "documento",
+									"description": "Arquivo PDF que será assinado",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "imagem",
+									"description": "Arquivo de imagem que será adicionado ao campo de assinatura",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "configuracao_imagem",
+									"value": "{\"altura\" : 30,  \"largura\" : 170,  \"coordenadaX\" : 70,  \"coordenadaY\" : 150,  \"posicaoBorda\" : \"BORDA_ESQUERDA\", \"pagina\" : \"PRIMEIRA\"}",
+									"description": "Configurações do campo de assinatura",
+									"type": "text"
+								},
+								{
+									"key": "configuracao_texto",
+									"value": "{\n\"texto\" : \"Assinado por .\" ,\n\"incluirCN\" : true,\n\"incluirCPF\" : true,\n\"incluirEmail\" : true\n}",
+									"description": "Configurações do texto que será adicionado ao campo de assinatura",
+									"type": "text"
+								},
+								{
+									"key": "documento",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "https://{{url_hub}}/fw/v1/pdf/kms/lote/assinaturas",
+							"protocol": "https",
+							"host": [
+								"{{url_hub}}"
+							],
+							"path": [
+								"fw",
+								"v1",
+								"pdf",
+								"kms",
+								"lote",
+								"assinaturas"
+							]
+						},
+						"description": "###### **Cabeçalho da requisição**\n\n* **fw_credencial**: *Credenciais de acesso ao BRy Framework <login+senha> codificado em base64.*\n* **kms_credencial**: *Chave de autorização (PIN) do usuário signatário codificada no formato Base64.*\n* **kms_credencial_tipo**: *Tipo da credencial fornecida. Atualmente só há suporte para o formato “PIN”.*\n* **auth_token**: *Token de autenticação da PJ cadastrada no BRy Cloud.*\n\n###### **Corpo da requisição**\n\n* **documento**: *Documento no formato PDF que será assinado.*\n* **imagem**: *Imagem que será inserida no campo de assinatura. Atualmente os formatos suportados são JPEG, PNG e BMP.*\n* **imagemFundo**: *Imagem que será inserida ao fundo do campo de assinatura. Atualmente os formatos suportados são JPEG, PNG e BMP.*\n* **dados_inicializar**: *Identificação do signatário (chave pública do certificado digital) e configurações básicas da assinatura (algoritmo de hash e perfil). Deve ser informado no formato JSON.*\n\t* **perfil**: *Perfil da assinatura que será gerada. [Valores disponíveis: “BASICA”, “CARIMBO”, \"ADRB\", \"ADRT\", \"ADRC\" e \"ADRA\"].*\n\t* **algoritmoHash**: *Algoritmo de hash que será utilizado para gerar a assinatura. [Valores disponíveis: “SHA1”, “SHA256” e “SHA512”]*\n\t* **formatoDadosEntrada**: *Indica ao Web serviço qual será o formato de codificação de dados. [Valores disponíveis: “Base64”].*\n\t* **formatoDadosSaida**: *Indica ao Web serviço qual será o formato de codificação de dados. [Valores disponíveis: “Base64”].*\n\t* **certificado**: *Certificado do signatário codificado em Base64.*\n\t* **nonces**: *Array de strings com um conjunto de nonces gerados pela aplicação cliente para realizar o controle das assinaturas. Para cada arquivo encaminhado, deverá ser atribuído um nonce.*\n* **configuracao_imagem**: *Configuração dos parâmetros de posição, dimensão e visualização da imagem. Deve ser informado no formato JSON.*\n\t* **altura**: *Altura da imagem que será inserida.*\n\t* **largura**: *Largura da imagem que será inserida.*\n\t* **coordenadaX**: *Define o deslocamento horizontal da imagem em relação ao canto inferior esquerdo da página. Valores positivos deslocam a imagem para a direita e para cima, enquanto negativos para a esquerda e para baixo.*\n\t* **coordenadaY**: *Define o deslocamento vertical da imagem em relação ao canto inferior esquerdo da página. Valores positivos deslocam a imagem para a direita e para cima, enquanto negativos para a esquerda e para baixo.*\n\t* **posicao**: *Define a posição da imagem em relação aos quatro cantos da página. [Valores disponíveis: “INFERIOR_DIREITO”, “INFERIOR_ESQUERDO”, “SUPERIOR_DIREITO” e “SUPERIOR_ESQUERDO”].*\n\t* **pagina**: *Define a(s) página(s) na qual a imagem será adicionada. [Valores disponíveis: “PRIMEIRA”, “ULTIMA” e “TODAS”].*\n\t* **numeroPagina**: *Define o índice da página na qual a imagem será adicionada. A contagem do índice de páginas inicia em 1.*\n\t* **campoAssinatura**: *Define o nome do campo preexistente no documento onde a assinatura será visível.*\n\t* **posicaoBorda**: *Define que a imagem será posicionada centralizada em uma das bordas da página. [Valores disponíveis: “BORDA_DIREITA”, “BORDA_ESQUERDA”, “BORDA_INFERIOR” e “BORDA_SUPERIOR”].*\n\t* **rotacaoImagemBorda**: *Define a rotação da imagem para os casos de página em modo paisagem ou imagem de assinatura posicionada na borda.[Valores disponíveis: ANTI_HORARIO_90_GRAUS e HORARIO_90_GRAUS].*\n\t* **imagemInvertida**: *Booleano que inverte a posição da imagem e do texto. O comportamento padrão é que a imagem (quando não for imagem de fundo) ficam do lado esquerdo da imagem da assinatura, enquanto o texto fica do lado direito. Definindo esta opção como true, a imagem ou nome do signatário ficarão do lado direito e o texto do lado esquerdo.*\n\t* **proporcaoImagem**: *Inteiro que define a proporção de espaço que a imagem ocupará em relação ao texto da assinatura. O valor padrão é 50, que indica que a imagem ocupará metade do espaço e o texto a outra metade. Valores menores que 50 indicam que a imagem ocupará uma parte menor do retângulo da assinatura, enquanto valores maiores farão com que ela ocupe um espaço maior no retângulo.*\n* **configuracao_texto**: *Configuração do texto que será inserido na assinatura. Deve ser informado no formato JSON.*\n\t* **texto**: *Define o texto que será incluído no campo da assinatura.*\n\t* **incluirCN**: *Define se o campo CN do certificado do signatário será incluído no texto da assinatura.*\n\t* **incluirCPF**: *Define se o campo CPF do certificado do signatário será incluído no texto da assinatura.*\n\t* **incluirEmail**: *Define se o campo Email do certificado do signatário será incluído no texto da assinatura.*\n\t* **rotacaoTexto**: *Define a rotação do texto. [Valores disponíveis: \"ANTI_HORARIO_90_GRAUS\" e \"HORARIO_90_GRAUS\"].*\n\n_______________________________________________________________________________________________________________________________________________________________________________________\n###### **Corpo da resposta**\n\n* **identificador**: *Identificador do lote.*\n* **quantidadeAssinaturas**: *Quantidade total de assinaturas realizadas no lote.*\n* **documentos**: *Array de documentos assinados.*\n\t* **hash**: *Hash do documento. É o seu identificador único.*\n\t* **links**: *Array com link, seguindo o princípio HATEOAS.*\n\t\t* **rel**: *“self” (representa uma auto referência do objeto em questão)*\n\t\t* **href**: *URL (Define o identificador único do recurso)*"
+					},
+					"response": []
+				},
+				{
+					"name": "Assinar PDF/PAdES utilizando PKCS12 (Passo único)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"name": "Content-Type",
+								"type": "text",
+								"value": "application/x-www-form-urlencoded"
+							},
+							{
+								"description": "Credenciais de acesso ao BRy Framework <login+senha> codificado em base64",
+								"key": "fw_credencial",
+								"value": "{{fw_credencial}}"
+							},
+							{
+								"description": "Senha de acesso ao certificado digital armazenado em Nuvem (BRy KMS) codificada em base64",
+								"key": "pfx",
+								"value": "{{password}}"
+							},
+							{
+								"description": "Tipo da credencial (PIN ou TOKEN)",
+								"key": "kms_credencial_tipo",
+								"value": "PIN",
+								"disabled": true
+							},
+							{
+								"description": "Token de autorização para uso serviços do BRy Cloud",
+								"key": "auth_token",
+								"value": "52FE22F8245A2F1769642F72E289C09DA7DA7E8E42F69BD2B1BBA45C99A40D89",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "dados_assinatura",
+									"value": "{\n  \"signatario\" : \"certificado_teste_hub\",\n  \"algoritmoHash\" : \"SHA256\",\n  \"perfil\" : \"ADRB\"\n}",
+									"description": "Dados para do assinante e tipo de assinatura digital",
+									"type": "text"
+								},
+								{
+									"key": "documento",
+									"description": "Arquivo PDF que será assinado",
+									"type": "file",
+									"src": "/C:/Users/luiz.sousa/git/pdf/signer_pdf_sdk/src/test/resources/arquivos_originais/hello.pdf"
+								},
+								{
+									"key": "imagem",
+									"description": "Arquivo de imagem que será adicionado ao campo de assinatura",
+									"type": "file",
+									"src": "/C:/Users/luiz.sousa/Pictures/bry.png"
+								},
+								{
+									"key": "configuracao_imagem",
+									"value": "{\"altura\" : 30,  \"largura\" : 170,  \"coordenadaX\" : 70,  \"coordenadaY\" : 150,  \"posicaoBorda\" : \"BORDA_ESQUERDA\", \"pagina\" : \"PRIMEIRA\"}",
+									"description": "Configurações do campo de assinatura",
+									"type": "text"
+								},
+								{
+									"key": "configuracao_texto",
+									"value": "{\n\"texto\" : \"Assinado por .\" ,\n\"incluirCN\" : true,\n\"incluirCPF\" : true,\n\"incluirEmail\" : true\n}",
+									"description": "Configurações do texto que será adicionado ao campo de assinatura",
+									"type": "text"
+								},
+								{
+									"key": "documento",
+									"type": "file",
+									"src": [],
+									"disabled": true
+								}
+							]
+						},
+						"url": {
+							"raw": "http://{{url_hub}}/fw/v1/pdf/pkcs12/assinaturas",
+							"protocol": "http",
+							"host": [
+								"{{url_hub}}"
+							],
+							"path": [
+								"fw",
+								"v1",
+								"pdf",
+								"pkcs12",
+								"assinaturas"
+							]
+						},
+						"description": "###### **Cabeçalho da requisição**\n\n* **fw_credencial**: *Credenciais de acesso ao BRy Framework <login+senha> codificado em base64.*\n* **pfx**: *Senha do PKCS12 (.pfx/.p12) configurado para a assinatura. Deve ser fornecido em formato Base64.*\n\n###### **Corpo da requisição**\n\n* **documento**: *Documento no formato PDF que será assinado.*\n* **imagem**: *Imagem que será inserida no campo de assinatura. Atualmente os formatos suportados são JPEG, PNG e BMP.*\n* **imagemFundo**: *Imagem que será inserida ao fundo do campo de assinatura. Atualmente os formatos suportados são JPEG, PNG e BMP.*\n* **dados_inicializar**: *Identificação do signatário (chave pública do certificado digital) e configurações básicas da assinatura (algoritmo de hash e perfil). Deve ser informado no formato JSON.*\n\t* **signatario**: *Nome do arquivo pfx/p12*\n\t* **perfil**: *Perfil da assinatura que será gerada. [Valores disponíveis: “BASICA”, “CARIMBO”, \"ADRB\", \"ADRT\", \"ADRC\" e \"ADRA\"].*\n\t* **algoritmoHash**: *Algoritmo de hash que será utilizado para gerar a assinatura. [Valores disponíveis: “SHA1”, “SHA256” e “SHA512”]*\n* **configuracao_imagem**: *Configuração dos parâmetros de posição, dimensão e visualização da imagem. Deve ser informado no formato JSON.*\n\t* **altura**: *Altura da imagem que será inserida.*\n\t* **largura**: *Largura da imagem que será inserida.*\n\t* **coordenadaX**: *Define o deslocamento horizontal da imagem em relação ao canto inferior esquerdo da página. Valores positivos deslocam a imagem para a direita e para cima, enquanto negativos para a esquerda e para baixo.*\n\t* **coordenadaY**: *Define o deslocamento vertical da imagem em relação ao canto inferior esquerdo da página. Valores positivos deslocam a imagem para a direita e para cima, enquanto negativos para a esquerda e para baixo.*\n\t* **posicao**: *Define a posição da imagem em relação aos quatro cantos da página. [Valores disponíveis: “INFERIOR_DIREITO”, “INFERIOR_ESQUERDO”, “SUPERIOR_DIREITO” e “SUPERIOR_ESQUERDO”].*\n\t* **pagina**: *Define a(s) página(s) na qual a imagem será adicionada. [Valores disponíveis: “PRIMEIRA”, “ULTIMA” e “TODAS”].*\n\t* **numeroPagina**: *Define o índice da página na qual a imagem será adicionada. A contagem do índice de páginas inicia em 1.*\n\t* **campoAssinatura**: *Define o nome do campo preexistente no documento onde a assinatura será visível.*\n\t* **posicaoBorda**: *Define que a imagem será posicionada centralizada em uma das bordas da página. [Valores disponíveis: “BORDA_DIREITA”, “BORDA_ESQUERDA”, “BORDA_INFERIOR” e “BORDA_SUPERIOR”].*\n\t* **rotacaoImagemBorda**: *Define a rotação da imagem para os casos de página em modo paisagem ou imagem de assinatura posicionada na borda.[Valores disponíveis: ANTI_HORARIO_90_GRAUS e HORARIO_90_GRAUS].*\n\t* **imagemInvertida**: *Booleano que inverte a posição da imagem e do texto. O comportamento padrão é que a imagem (quando não for imagem de fundo) ficam do lado esquerdo da imagem da assinatura, enquanto o texto fica do lado direito. Definindo esta opção como true, a imagem ou nome do signatário ficarão do lado direito e o texto do lado esquerdo.*\n\t* **proporcaoImagem**: *Inteiro que define a proporção de espaço que a imagem ocupará em relação ao texto da assinatura. O valor padrão é 50, que indica que a imagem ocupará metade do espaço e o texto a outra metade. Valores menores que 50 indicam que a imagem ocupará uma parte menor do retângulo da assinatura, enquanto valores maiores farão com que ela ocupe um espaço maior no retângulo.*\n* **configuracao_texto**: *Configuração do texto que será inserido na assinatura. Deve ser informado no formato JSON.*\n\t* **texto**: *Define o texto que será incluído no campo da assinatura.*\n\t* **incluirCN**: *Define se o campo CN do certificado do signatário será incluído no texto da assinatura.*\n\t* **incluirCPF**: *Define se o campo CPF do certificado do signatário será incluído no texto da assinatura.*\n\t* **incluirEmail**: *Define se o campo Email do certificado do signatário será incluído no texto da assinatura.*\n\t* **rotacaoTexto**: *Define a rotação do texto. [Valores disponíveis: \"ANTI_HORARIO_90_GRAUS\" e \"HORARIO_90_GRAUS\"].*\n\n_______________________________________________________________________________________________________________________________________________________________________________________\n###### **Corpo da resposta**\n\n* **identificador**: *Identificador do lote.*\n* **quantidadeAssinaturas**: *Quantidade total de assinaturas realizadas no lote.*\n* **documentos**: *Array de documentos assinados.*\n\t* **hash**: *Hash do documento. É o seu identificador único.*\n\t* **links**: *Array com link, seguindo o princípio HATEOAS.*\n\t\t* **rel**: *“self” (representa uma auto referência do objeto em questão)*\n\t\t* **href**: *URL (Define o identificador único do recurso)*"
+					},
+					"response": []
+				}
+			],
+			"description": "#### Geração de assinatura com o BRy HUB\n\n1. ###### Métodos disponíveis para geração da assinatura PDF/PAdES\n\t1. ###### Assinatura com certificado armazenado no navegador\n\tVisando permitir a geração de assinaturas em sistemas Web, a solução cliente deverá estar integrada com a extensão para navegadores BRy (BRy Extension), que será responsável por listar e acessar as propriedades dos certificados instalados na máquina do cliente. Neste modo, denominado PKCS#1, o processo de assinatura é dividido em duas etapas, denominadas **inicialização** e **finalização**. Na primeira, é enviada uma requisição no formato JSON para o BRy HUB para que gere uma estrutura denominada message digest. Estes serão devolvidos para a página, onde a extensão para navegadores BRy (BRy Extension), utilizará o certificado selecionado para cifrar esta informação. É importante salientar que a chave privada do certificado não será trafegada em nenhum momento, ou seja, todo o processo de cifragem ocorrerá no lado do cliente. Na segunda etapa, ou finalização, os atributos cifrados são encaminhados novamente para o BRy HUB, no formato JSON. A resposta desta requisição estará no formato multipart e possuirá o arquivo no formato PDF já com as assinaturas.\n\tPara maiores informações de como configurar as requisições, as respostas que são retornadas, e demais eventualidades, consulte a sua documentação.\n![Processo em dois passos](https://i.imgur.com/Z5Bb2IN.png)\n\t2. ###### Assinatura com certificado em arquivo\n\tEste método utiliza o arquivo do certificado (formato PKCS#12), que contém o certificado e sua respectiva chave privada. É uma maneira mais simples de realizar a assinatura, porém não muito segura, tendo em vista que a chave privada do usuário é trafegada e enviada ao servidor. Além disso, é necessário também enviar ao servidor a senha do arquivo PKCS#12. Neste método, a geração da assinatura é realizada em um passo único. É necessário enviar a senha do arquivo .p12(.pfx) no header da requisição. Essa senha deve estar codificada em Base64.\n\n\t3. ###### Assinatura com certificado armazenados na nuvem\n\tVisando permitir assinaturas digitais em um cenário onde os certificados digitais são armazenados em HSM, mais especificamente na solução BRy KMS, a API do BRy HUB disponibiliza um recurso que suporta esta funcionalidade. Basicamente, a aplicação cliente enviará uma requisição contendo o documento PDF que deseja assinar, bem como as configurações necessárias para realização desta assinatura. Para assinaturas com certificados no BRy KMS, existem duas abordagens, sendo uma delas para assinatura de **documentos individuais**, e outra para assinaturas de documentos em **lote** (vários documentos). Nestes métodos, a geração da assinatura é realizada em um passo único.\n\t###### Credenciais de acesso\n\t\tPara utilizar esta funcionalidade, é necessário a inclusão das credenciais de acesso no header da requisição.\n\t\n\t\t**BRy Cloud**\n\t\t\t\n\t\tA autenticação no portal de serviços – BRy Cloud – deve ser realizada através do atributo “auth_token” incluído no header da requisição. O valor deste atributo deve ser o token de aplicação gerado junto ao portal BRy Cloud. Contas corporativas podem gerar um token de Pessoa Jurídica através da interface do BRy Cloud, no menu “Gestão/Minhas Aplicações”. Maiores informações podem ser obtidas no manual do BRy Cloud.\n\n\t\t**BRy KMS**\n\t\t\t\n\t\tPara realização das operações de assinatura com certificados armazenados na plataforma BRy KMS, é necessário que sejam configurados os atributos “kms_credencial” e “kms_credencial_tipo” no cabeçalho das requisições.\n\t\t\t\n\t\t* kms_credencial_tipo: podem ser atribuídos os valores “PIN” e “TOKEN.\n\t\t* kms_credencial: caso seja atribuído o tipo “PIN”, o valor deste atributo deverá ser o PIN do certificado, codificado em Base64. Caso seja atribuído o tipo “TOKEN”, o valor deste atributo deverá ser o token de pré autorização gerado previamente.\n\t\t\n\t![Processo com KMS](https://i.imgur.com/E5bU3PP.png)"
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "b24d7e56-b3fc-4981-9048-26e816362f34",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "0cf6ef1d-2d82-465f-b68f-9d7ea6999a28",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

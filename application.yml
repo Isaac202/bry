@@ -1,0 +1,92 @@
+framework:
+  url: https://fw.bry.com.br
+
+kms:
+  url: https://kms.bry.com.br/kms/rest/v1
+  compartimentos:
+    vinculados: true 
+    
+spring:
+  application:
+    name: hub-fw
+  mvc:
+    throw-exception-if-no-handler-found: true
+  resources:
+    add-mappings: false
+
+server:
+  port: 8087
+  tomcat:
+    max-http-post-size: 104857600
+  ssl:
+   enabled: false
+   key-alias: "*.bry.com.br"
+   key-store: "/opt/bry/hub/repositorio_ssl.jks"
+   key-store-password: password
+
+tomcat:
+  ajp:
+    enabled: true
+    port: 8020
+    
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    tags:
+      application: hub-fw
+  
+
+# Configuração do local onde será armazenado os arquivos de log.
+# path: caminho até a pasta em que será salvo
+# file: nome do arquivo de log
+#
+# Diariamente, os arquivos de log do dia anterior são movidos para uma pasta "arquivos" interna à pasta definida na váriavel "path". 
+# O arquivo do dia atual fica sempre na pasta definida em "path" com o nome definido em "file"
+#
+# As variáveis GRAYLOG_HOST, GRAYLOG_PORT e GRAYLOG_FACILITY_NAME são utilizadas para configuração do graylog.
+# Ex:
+#  GRAYLOG_HOST: graylog.x.com.br
+#  GRAYLOG_PORT: 12201
+#  GRAYLOG_FACILITY_NAME: bry-hub
+#
+# Caso não possua graylog, mantenha os valores em branco.
+
+logging:
+  level: 
+    br.com.bry.hub: info
+    org: error
+  path: 
+  file: hub-fw
+  GRAYLOG_HOST: 
+  GRAYLOG_PORT: 
+  GRAYLOG_FACILITY_NAME: 
+  
+# Configuração refente a possibilidade de assinar utilizando um PKCS12
+#
+# A variável "signatario" é refente ao nome do arquivo pkcs12/pfx. Deve ser informado entre aspas simples e sem a extensão do arquivo.
+# A variável "diretorio" deve ser preenchida com o caminho completo até a pasta contendo os arquivos pkcs12/pfx.
+# Ex:
+#   signatario: 'teste'
+#   diretorio: C:\\hub\\
+#
+# É possível configurar mais de um diretorio, basta separar cada diretorio com um "-".
+# Ex:
+# diretorios:
+#   -
+#       signatario:
+#       diretorio:
+#   -
+#       signatario:
+#       diretorio:
+
+pkcs12:
+  diretorios:
+    -
+      signatario: 
+      diretorio: 
+    -
+      signatario: 
+      diretorio: 
